@@ -931,6 +931,7 @@ def register_user():
         # Generate a unique ID for the student using UUID
         uid = str(uuid.uuid4().hex)
         data["uid"] = uid
+        data["cagesAssigned"] = []
 
         if not data['id'] or data['id'] == "":
             return jsonify({"message": "User not registered", "success": False}),401
@@ -988,7 +989,7 @@ def delete_user():
 @app.route('/addCage', methods=['POST'])
 def add_cages():
     try:
-        data = request.form
+        data = request.get_json()
         data = dict(data)
         # Generate a unique ID for the student using UUID
         cid = str(uuid.uuid4().hex)
