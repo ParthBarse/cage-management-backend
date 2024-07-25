@@ -937,6 +937,11 @@ def register_user():
             return jsonify({"message": "User not registered", "success": False}),401
         
         users_db = db["users_db"]
+
+        user = users_db.find_one({"srNo":data['srNo']})
+        if user:
+            return jsonify({"message": "User already exist with same ID", "success": False}), 401
+        
         users_db.insert_one(data)
         return jsonify({"message": "User registered successfully", "uid": uid})
 
@@ -995,12 +1000,15 @@ def add_cages():
         cid = str(uuid.uuid4().hex)
         data["cid"] = cid
 
-        if not data['id'] or data['id'] == "":
+        if not data['srNo'] or data['srNo'] == "":
             return jsonify({"message": "Cage not registered", "success": False}),401
         
         cages_db = db["cages_db"]
+        cage = cages_db.find_one({"srNo":data['srNo']})
+        if cage:
+            return jsonify({"message": "Cage already exist with same Serial Number", "success": False}), 401
         cages_db.insert_one(data)
-        return jsonify({"message": "Cage registered successfully", "cid": cid})
+        return jsonify({"message": "Cage registered successfully","success": True, "cid": cid})
 
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 400  # Bad Request
