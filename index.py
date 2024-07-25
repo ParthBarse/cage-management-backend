@@ -926,7 +926,7 @@ def get_all_users():
 @app.route('/registerUser', methods=['POST'])
 def register_user():
     try:
-        data = request.form
+        data = request.get_json()
         data = dict(data)
         # Generate a unique ID for the student using UUID
         uid = str(uuid.uuid4().hex)
