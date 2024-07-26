@@ -1106,6 +1106,43 @@ def get_all_cages():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+
+@app.route('/filterCages', methods=['POST'])
+def filter_cages():
+    try:
+        # Get filter parameters from request parameters
+        filter_params = request.json
+
+        # Build the filter query
+        filter_query = build_filter_query(filter_params)
+
+        # Find cages based on the filter query
+        cages_db = db["cages_db"]
+        cages = cages_db.find(filter_query, {"_id": 0})  # Exclude the _id field from the response
+
+        # Convert the cursor to a list of dictionaries for easier serialization
+        cage_list = list(cages)
+
+        return jsonify({"cages": cage_list})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+
+def build_filter_query(params):
+    filter_query = {}
+    for key, value in params.items():
+        if value:
+            # For 'size-range', parse min_size and max_size and add to the filter query
+            if key == 'size-range':
+                min_size, max_size = value.split(',')
+                filter_query['size'] = {"$gte": int(min_size), "$lte": int(max_size)}
+
+            # For other parameters, use regex for partial matching
+            else:
+                filter_query[key] = re.compile(f".*{re.escape(value)}.*", re.IGNORECASE)
+
+    return filter_query
 
 
  
