@@ -951,6 +951,31 @@ def register_user():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
     
+@app.route('/editUser', methods=['PUT'])
+def edit_user():
+    try:
+        data = request.get_json()
+        if not data.get('uid'):
+            return jsonify({"message": "UID is required", "success": False}), 400
+        
+        users_db = db["users_db"]
+
+        uid = data['uid']
+        updated_data = {key: value for key, value in data.items() if key != 'uid' and key != "password"}
+
+        result = users_db.update_one({"uid": uid}, {"$set": updated_data})
+
+        if result.matched_count == 0:
+            return jsonify({"message": "User not found", "success": False}), 404
+
+        return jsonify({"message": "User updated successfully", "success": True})
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400  # Bad Request
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
 
 @app.route('/getUser', methods=['GET'])
 def get_user():
