@@ -894,9 +894,8 @@ def login_admin():
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
 
-        if user['designation'] == "DFO" or user['designation'] == "dfo" or user['designation'] == "ACF" or user['designation'] == "acf" or user['designation'] == "RFO" or user['designation'] == "rfo":
-
-            if not user or not check_password_hash(user.get("password", ""), password):
+        if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO":
+            if not user or not (user.get("password", "") == password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
             # Generate JWT token
