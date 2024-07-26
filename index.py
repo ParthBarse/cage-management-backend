@@ -1044,7 +1044,7 @@ def add_cages():
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
     try:
-        data = request.form
+        data = request.get_json()
         data = dict(data)
         cages_db = db["cages_db"]
 
