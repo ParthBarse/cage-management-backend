@@ -938,7 +938,7 @@ def register_user():
         
         users_db = db["users_db"]
 
-        user = users_db.find_one({"srNo":data['srNo']})
+        user = users_db.find_one({"id":data['id']})
         if user:
             return jsonify({"message": "User already exist with same ID", "success": False}), 401
         
