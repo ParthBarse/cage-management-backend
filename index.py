@@ -1063,7 +1063,7 @@ def createNotificationAssignment(data):
         new_assigned_1 = ", ".join(list(all_cage_srNo))
         nid = str(uuid.uuid4().hex)
         new_notification = {
-            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned_1}.",
+            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to Serial Number - {new_assigned_1}.",
             "new_assigned" : data['cagesAssigned'],
             "uid":data['uid'],
             "status":"Active",
