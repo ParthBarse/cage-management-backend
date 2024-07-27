@@ -960,6 +960,8 @@ def edit_user():
         users_db = db["users_db"]
 
         uid = data['uid']
+
+        existing_data = users_db.find_one({'uid':uid},{'_id':0})
         updated_data = {}
         # updated_data = {key: value for key, value in data.items() if key != 'uid' and key != "password"}
 
@@ -967,7 +969,7 @@ def edit_user():
             if value != "" and key != "cagesAssigned" and key != "assignedBy" and key != 'uid' and key != "password":
                 updated_data[key] = value
 
-        if list(data['cagesAssigned']) != list(updated_data['cagesAssigned']):
+        if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
             createNotificationAssignment(data)
 
         result = users_db.update_one({"uid": uid}, {"$set": updated_data})
