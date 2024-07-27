@@ -1070,7 +1070,7 @@ def update_cage():
 
         # Update only provided fields
         for key, value in data.items():
-            if value != "" and key != "cagesAssigned" and key != "assignedBy":
+            if value != "" or key != "cagesAssigned" or key != "assignedBy":
                 existing_cage[key] = value
 
         if list(data['cagesAssigned']) != list(existing_cage['cagesAssigned']):
