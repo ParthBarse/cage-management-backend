@@ -1197,7 +1197,7 @@ def update_notification_status():
         users_db = db['users_db']
         if status == "accept":
             notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
-            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
+            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned'],"status":"closed"}})
             return jsonify({"message": "Accepted", "success": True}), 200
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
