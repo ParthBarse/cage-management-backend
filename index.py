@@ -1197,11 +1197,12 @@ def update_notification_status():
         users_db = db['users_db']
         if status == "accept":
             notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
-            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned'],"status":"closed"}})
+            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
+            notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
             return jsonify({"message": "Accepted", "success": True}), 200
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
-            notifications_db.update_one({'nid':nid}, {"$set": {"status":"Reject"}})
+            notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
             return jsonify({"message": "Reject", "success": False}), 200
 
     except Exception as e:
