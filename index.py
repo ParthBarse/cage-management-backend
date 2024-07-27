@@ -1052,12 +1052,18 @@ def add_cages():
 
 def createNotificationAssignment(data):
     notifications_db = db['notifications_db']
+    cages_db = db['cages_db']
     new_assigned = data['cagesAssigned']
     if len(new_assigned) != 0:
-        new_assigned = ", ".join(list(new_assigned.srNo))
+        all_cage_srNo = []
+        for dt in new_assigned:
+            cg = cages_db.find_one({"cid":dt},{"_id":0})
+            srNo = cg['srNo']
+            all_cage_srNo.append(srNo)
+        new_assigned_1 = ", ".join(list(all_cage_srNo))
         nid = str(uuid.uuid4().hex)
         new_notification = {
-            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned}.",
+            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned_1}.",
             "new_assigned" : data['cagesAssigned'],
             "uid":data['uid'],
             "status":"Active",
