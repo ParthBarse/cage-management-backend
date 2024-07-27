@@ -901,7 +901,7 @@ def login_admin():
             # Generate JWT token
             token = create_jwt_token(user['uid'])
 
-            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "token": token})
+            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "token": token})
         else:
             return jsonify({"message": "User not Allowed", "success": False})
 
@@ -1039,7 +1039,20 @@ def add_cages():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
-    
+
+def createNotificationAssignment(data):
+    notifications_db = db['notifications_db']
+    new_assigned = data['cagesAssigned']
+    new_assigned = ", ".join(list(new_assigned))
+    nid = str(uuid.uuid4().hex)
+    new_notification = {
+        "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned}.",
+        "new_assigned" : data['cagesAssigned'],
+        "uid":data['uid'],
+        "status":"Active",
+        "nid":nid
+    }
+    notifications_db.insert_one(new_notification)
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
@@ -1057,8 +1070,12 @@ def update_cage():
 
         # Update only provided fields
         for key, value in data.items():
-            if value != "":
+            if value != "" and key != "cagesAssigned" and key != "assignedBy":
                 existing_cage[key] = value
+
+        if list(data['cagesAssigned']) != list(existing_cage['cagesAssigned']):
+            createNotificationAssignment(data)
+
 
         cages_db.update_one({"cid": cid}, {"$set": existing_cage})
         return jsonify({"message": "Cage updated successfully", "success": True}), 200
@@ -1143,6 +1160,35 @@ def build_filter_query(params):
                 filter_query[key] = re.compile(f".*{re.escape(value)}.*", re.IGNORECASE)
 
     return filter_query
+
+@app.route('/getAllNotifications', methods=['GET'])
+def get_all_notifications():
+    try:
+        notifications_db = db['notifications_db']
+        notifications = list(notifications_db.find({'status':'Active'}, {"_id": 0}))
+        return jsonify({"notifications": notifications, "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/updateNotificationStatus', methods=['GET'])
+def update_notification_status():
+    try:
+        status = request.args.get('status')
+        nid = request.args.get('nid')
+        notifications_db = db['notifications_db']
+        users_db = db['users_db']
+        if status == "accept":
+            notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
+            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
+            return jsonify({"message": "Accepted", "success": True}), 200
+        else:
+            # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
+            notifications_db.update_one({'nid':nid}, {"$set": {"status":"Reject"}})
+            return jsonify({"message": "Reject", "success": False}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
 
 
  
