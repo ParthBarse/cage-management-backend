@@ -1053,16 +1053,17 @@ def add_cages():
 def createNotificationAssignment(data):
     notifications_db = db['notifications_db']
     new_assigned = data['cagesAssigned']
-    new_assigned = ", ".join(list(new_assigned))
-    nid = str(uuid.uuid4().hex)
-    new_notification = {
-        "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned}.",
-        "new_assigned" : data['cagesAssigned'],
-        "uid":data['uid'],
-        "status":"Active",
-        "nid":nid
-    }
-    notifications_db.insert_one(new_notification)
+    if len(new_assigned) != 0:
+        new_assigned = ", ".join(list(new_assigned.srNo))
+        nid = str(uuid.uuid4().hex)
+        new_notification = {
+            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to {new_assigned}.",
+            "new_assigned" : data['cagesAssigned'],
+            "uid":data['uid'],
+            "status":"Active",
+            "nid":nid
+        }
+        notifications_db.insert_one(new_notification)
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
