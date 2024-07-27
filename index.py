@@ -215,6 +215,23 @@ def save_file(file, uid):
         return f'{files_base_url}{uid}/{filename}'
     except Exception as e:
         raise e
+    
+def save_file_2(file, uid):
+    try:
+        # Get the file extension from the original filename
+        original_filename = file.filename
+        _, file_extension = os.path.splitext(original_filename)
+
+        # Generate a unique filename using UUID and append the original file extension
+        filename = str(uuid.uuid4()) + file_extension
+
+        file_path = os.path.join(file_directory, uid, filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        file.save(file_path)
+
+        return file_path
+    except Exception as e:
+        raise e
 
 #-------------- Supporting Functions Start ----------------
 
@@ -938,7 +955,8 @@ def register_user():
         users_db = db["users_db"]
 
         user = users_db.find_one({"id":data['id']})
-        if user:
+        user2 = users_db.find_one({"username":data['username']})
+        if user or user2:
             return jsonify({"message": "User already exist with same ID", "success": False}), 401
         
         users_db.insert_one(data)
@@ -1203,11 +1221,102 @@ def update_notification_status():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+
+def register_user_bulk(data):
+    try:
+        data = dict(data)
+        # Generate a unique ID for the student using UUID
+        uid = str(uuid.uuid4().hex)
+        data["uid"] = uid
+        data["cagesAssigned"] = []
+        if not data['id'] or data['username'] == "":
+            return 1
+        users_db = db["users_db"]
+        user = users_db.find_one({"id":data['id']})
+        user2 = users_db.find_one({"username":data['username']})
+        if user or user2:
+            return 1
+        users_db.insert_one(data)
+        return 0
+
+    except ValueError as ve:
+        return 1
+    except Exception as e:
+        return 1
+    
+import pandas as pd
+
+def generate_username(email):
+    return email.strip().split('@')[0].lower()
+
+range_shortforms = {
+    'Junnar': 'JN',
+    'Ghodegaon': 'GH',
+    'Chakan': 'CH',
+    'Shirur': 'SH',
+    'Otur': 'OT',
+    'Khed': 'KH',
+    'Manchar': 'MA'
+}
+
+def generate_id(range_name, username):
+    range_shortform = range_shortforms.get(range_name, '')
+    return range_shortform + '-' + username
+
+def bulk_import_user_data(data):
+    for dt in data:
+        register_user_bulk(dt)
+
+@app.route('/bulkUserImport', methods=['POST'])
+def upload_file():
+    try:
+        # Check if 'file' and 'sid' parameters are present in the form data
+        if 'file' not in request.files:
+            return jsonify({'error': 'Missing parameters: file',"success":False}), 400
+
+        uploaded_file = request.files['file']
+        sid = "All_Files"
+
+        # Check if the file is an allowed type (e.g., image or pdf)
+        allowed_extensions = {'xlsx', 'xls', 'csv'}
+        if (
+            '.' in uploaded_file.filename
+            and uploaded_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions
+        ):
+            return jsonify({'error': 'Invalid file type. Only allowed: png, jpg, jpeg, gif, pdf.',"success":False}), 400
+
+        # Save the file and get the URL
+        file_path = save_file_2(uploaded_file, sid)
+
+        df = pd.read_excel(file_path)
+        print(df.head())
+
+        df['username'] = df.apply(
+            lambda row: generate_username(row['email']) if pd.isna(row['username']) else row['username'],
+            axis=1
+        )
+        df['id'] = df.apply(
+            lambda row: generate_id(row['range'], row['username']) if pd.isna(row['id']) else row['id'],
+            axis=1
+        )
+        df['password'] = df.apply(
+            lambda row: row['phone'] if pd.isna(row['password']) else row['password'],
+            axis=1
+        )
+        print(df)
+        user_data = df.to_dict(orient='records')
+
+        thread = threading.Thread(target=bulk_import_user_data, args=(user_data,))
+        thread.start()
 
 
- 
+        return jsonify({'message': 'File stored successfully.', 'file_url': file_path,"success":True}), 200
 
-
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e),"success":False}), 500
+    
 
 
 if __name__ == '__main__':
