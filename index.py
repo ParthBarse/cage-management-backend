@@ -964,7 +964,7 @@ def edit_user():
         # updated_data = {key: value for key, value in data.items() if key != 'uid' and key != "password"}
 
         for key, value in data.items():
-            if value != "" or key != "cagesAssigned" or key != "assignedBy" or key != 'uid' or key != "password":
+            if value != "" and key != "cagesAssigned" and key != "assignedBy" and key != 'uid' and key != "password":
                 updated_data[key] = value
 
         if list(data['cagesAssigned']) != list(updated_data['cagesAssigned']):
