@@ -1245,6 +1245,30 @@ def register_user_bulk(data):
     except Exception as e:
         return 1
     
+def add_cages_bulk(data):
+    try:
+        data = dict(data)
+        # Generate a unique ID for the student using UUID
+        cid = str(uuid.uuid4().hex)
+        data["cid"] = cid
+
+        if not data['srNo'] or data['srNo'] == "":
+            return 1
+        
+        cages_db = db["cages_db"]
+        cage = cages_db.find_one({"srNo":data['srNo']})
+        if cage:
+            return 1
+        cages_db.insert_one(data)
+        return 0
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400  # Bad Request
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+
+    
 import pandas as pd
 
 def generate_username(email):
@@ -1268,8 +1292,12 @@ def bulk_import_user_data(data):
     for dt in data:
         register_user_bulk(dt)
 
+def bulk_import_cage_data(data):
+    for dt in data:
+        add_cages_bulk(dt)
+
 @app.route('/bulkUserImport', methods=['POST'])
-def upload_file():
+def upload_file_user():
     try:
         # Check if 'file' and 'sid' parameters are present in the form data
         if 'file' not in request.files:
@@ -1290,7 +1318,6 @@ def upload_file():
         file_path = save_file_2(uploaded_file, sid)
 
         df = pd.read_excel(file_path)
-        print(df.head())
 
         df['username'] = df.apply(
             lambda row: generate_username(row['email']) if pd.isna(row['username']) else row['username'],
@@ -1304,14 +1331,49 @@ def upload_file():
             lambda row: row['phone'] if pd.isna(row['password']) else row['password'],
             axis=1
         )
-        print(df)
         user_data = df.to_dict(orient='records')
 
-        thread = threading.Thread(target=bulk_import_user_data, args=(user_data,))
-        thread.start()
+        if user_data:
+            thread = threading.Thread(target=bulk_import_user_data, args=(user_data,))
+            thread.start()
+            return jsonify({'message': 'File stored successfully.', 'file_url': file_path,"success":True}), 200
+        else:
+            return jsonify({'message': 'File not stored successfully.',"success":False}), 401
 
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e),"success":False}), 500
+    
+@app.route('/bulkCageImport', methods=['POST'])
+def upload_file_cage():
+    try:
+        # Check if 'file' and 'sid' parameters are present in the form data
+        if 'file' not in request.files:
+            return jsonify({'error': 'Missing parameters: file',"success":False}), 400
 
-        return jsonify({'message': 'File stored successfully.', 'file_url': file_path,"success":True}), 200
+        uploaded_file = request.files['file']
+        sid = "All_Files"
+
+        # Check if the file is an allowed type (e.g., image or pdf)
+        allowed_extensions = {'xlsx', 'xls', 'csv'}
+        if (
+            '.' in uploaded_file.filename
+            and uploaded_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions
+        ):
+            return jsonify({'error': 'Invalid file type. Only allowed: png, jpg, jpeg, gif, pdf.',"success":False}), 400
+
+        # Save the file and get the URL
+        file_path = save_file_2(uploaded_file, sid)
+
+        df = pd.read_excel(file_path)
+        cage_data = df.to_dict(orient='records')
+
+        if cage_data:
+            thread = threading.Thread(target=bulk_import_cage_data, args=(cage_data,))
+            thread.start()
+            return jsonify({'message': 'File stored successfully.', 'file_url': file_path,"success":True}), 200
+        else:
+            return jsonify({'message': 'File not stored successfully.',"success":False}), 401
 
     except Exception as e:
         print(str(e))
