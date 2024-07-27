@@ -1202,7 +1202,7 @@ def update_notification_status():
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"Reject"}})
-            return jsonify({"message": "Reject", "success": False}), 401
+            return jsonify({"message": "Reject", "success": False}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
