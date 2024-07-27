@@ -26,6 +26,7 @@ import zipfile
 import requests
 import base64
 import threading
+import pandas as pd
 
 from docx import Document
 from docx.shared import Pt
@@ -1269,7 +1270,7 @@ def add_cages_bulk(data):
         return jsonify({"error": str(e)}), 500  # Internal Server Error
 
     
-import pandas as pd
+# import pandas as pd
 
 def generate_username(email):
     return email.strip().split('@')[0].lower()
