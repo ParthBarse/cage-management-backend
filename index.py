@@ -1090,10 +1090,6 @@ def update_cage():
             if value != "" or key != "cagesAssigned" or key != "assignedBy":
                 existing_cage[key] = value
 
-        if list(data['cagesAssigned']) != list(existing_cage['cagesAssigned']):
-            createNotificationAssignment(data)
-
-
         cages_db.update_one({"cid": cid}, {"$set": existing_cage})
         return jsonify({"message": "Cage updated successfully", "success": True}), 200
 
