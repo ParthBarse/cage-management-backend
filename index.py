@@ -200,7 +200,7 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
     ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
     curr_date = ind_time
 
-    if len(cages) :
+    if len(cages) != 0:
         assigned_cages = ""
         data = {
             "lType":"cageAssignedUser",
@@ -1290,12 +1290,12 @@ def update_notification_status():
             notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
             users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
-            # createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'])
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'])
             return jsonify({"message": "Accepted", "success": True}), 200
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
-            # createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
             return jsonify({"message": "Reject", "success": False}), 200
 
     except Exception as e:
