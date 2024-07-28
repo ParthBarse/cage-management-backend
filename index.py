@@ -1116,6 +1116,7 @@ def createNotificationAssignment(data,nf=False):
     notifications_db = db['notifications_db']
     cages_db = db['cages_db']
     new_assigned = data['cagesAssigned']
+    name = f"{data['firstName']} {data['lastName']}"
     if len(new_assigned) != 0:
         all_cage_srNo = []
         for dt in new_assigned:
@@ -1132,7 +1133,6 @@ def createNotificationAssignment(data,nf=False):
             "nid":nid
         }
         notifications_db.insert_one(new_notification)
-        name = f"{data['firstName']} {data['lastName']}"
         createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],new_assigned, new_assigned_1)
     else:
         nid = str(uuid.uuid4().hex)
