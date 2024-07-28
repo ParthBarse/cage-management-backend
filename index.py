@@ -1032,7 +1032,7 @@ def edit_user():
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
             createNotificationAssignment(data)
         if len(list(data['cagesAssigned'])) == 0:
-            createNotificationAssignment(data,nf=True)
+            createNotificationAssignment(data)
 
         result = users_db.update_one({"uid": uid}, {"$set": updated_data})
 
@@ -1112,44 +1112,59 @@ def add_cages():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
 
-def createNotificationAssignment(data,nf=False):
+def createNotificationAssignment(data):
     notifications_db = db['notifications_db']
     cages_db = db['cages_db']
     new_assigned = data['cagesAssigned']
     name = f"{data['firstName']} {data['lastName']}"
-    if len(new_assigned) != 0:
-        all_cage_srNo = []
-        for dt in new_assigned:
-            cg = cages_db.find_one({"cid":dt},{"_id":0})
-            srNo = cg['srNo']
-            all_cage_srNo.append(srNo)
-        new_assigned_1 = ", ".join(list(all_cage_srNo))
-        nid = str(uuid.uuid4().hex)
-        new_notification = {
-            "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to Serial Number - {new_assigned_1}.",
-            "new_assigned" : data['cagesAssigned'],
-            "designation":data["designation"],
-            "range": data["range"],
-            "name":name,
-            "cageText": new_assigned_1,
-            "uid":data['uid'],
-            "status":"Active",
-            "nid":nid
-        }
-        notifications_db.insert_one(new_notification)
+
+    if new_assigned :
+        if len(new_assigned) != 0:
+            all_cage_srNo = []
+            for dt in new_assigned:
+                cg = cages_db.find_one({"cid":dt},{"_id":0})
+                srNo = cg['srNo']
+                all_cage_srNo.append(srNo)
+            new_assigned_1 = ", ".join(list(all_cage_srNo))
+            nid = str(uuid.uuid4().hex)
+            new_notification = {
+                "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to Serial Number - {new_assigned_1}.",
+                "new_assigned" : data['cagesAssigned'],
+                "designation":data["designation"],
+                "range": data["range"],
+                "name":name,
+                "cageText": new_assigned_1,
+                "uid":data['uid'],
+                "status":"Active",
+                "nid":nid
+            }
+            notifications_db.insert_one(new_notification)
+        else:
+            nid = str(uuid.uuid4().hex)
+            new_notification = {
+                "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
+                "new_assigned" : data['cagesAssigned'],
+                "designation":data["designation"],
+                "name":name,
+                "range": data["range"],
+                "uid":data['uid'],
+                "status":"Active",
+                "nid":nid
+            }
+            notifications_db.insert_one(new_notification)
     else:
-        nid = str(uuid.uuid4().hex)
-        new_notification = {
-            "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
-            "new_assigned" : data['cagesAssigned'],
-            "designation":data["designation"],
-            "name":name,
-            "range": data["range"],
-            "uid":data['uid'],
-            "status":"Active",
-            "nid":nid
-        }
-        notifications_db.insert_one(new_notification)
+            nid = str(uuid.uuid4().hex)
+            new_notification = {
+                "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
+                "new_assigned" : data['cagesAssigned'],
+                "designation":data["designation"],
+                "name":name,
+                "range": data["range"],
+                "uid":data['uid'],
+                "status":"Active",
+                "nid":nid
+            }
+            notifications_db.insert_one(new_notification)
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
