@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 import datetime
 from datetime import datetime
+from pytz import timezone 
 import random
 import json
 from email.mime.text import MIMEText
@@ -191,7 +192,47 @@ def calculate_result(exam_id,seid):
     # generate_certificate(doc,student_data)
     thread.start()
 
+def createLog(data):
+    notification_db = db['logs_db']
+    notification_db.insert_one(data)
 
+def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
+    ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
+    curr_date = ind_time
+
+    if cages :
+        assigned_cages = ""
+        data = {
+            "lType":"cageAssignedUser",
+            "lText": f"The updated cages Assigned to {desgnation} {name} are : {cageText}",
+            "date":curr_date,
+            "name" : name,
+            "designation": desgnation,
+            "range": range_name,
+            "uid":uid
+        }
+        createLog(data)
+        for cage in cages:
+            dt = {
+                "lType":"cageAssignment",
+                "lText": f"This Cage is Assigned to : {desgnation} {name}",
+                "range" : range,
+                "date" : curr_date,
+                "uid":uid,
+                "cid":cage
+            }
+            createLog(dt)
+    else:
+        data = {
+            "lType":"cageAssignedUser",
+            "lText": f"No Cages are now Assigned to {desgnation} {name}",
+            "date":curr_date,
+            "name" : name,
+            "designation": desgnation,
+            "range": range_name,
+            "uid":uid
+        }
+        createLog(data)
 
 
 #-----------------------------------------------------------------------------------------
@@ -990,6 +1031,8 @@ def edit_user():
 
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
             createNotificationAssignment(data)
+        if len(list(data['cagesAssigned'])) == 0:
+            createNotificationAssignment(data,nf=True)
 
         result = users_db.update_one({"uid": uid}, {"$set": updated_data})
 
@@ -1069,7 +1112,7 @@ def add_cages():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
 
-def createNotificationAssignment(data):
+def createNotificationAssignment(data,nf=False):
     notifications_db = db['notifications_db']
     cages_db = db['cages_db']
     new_assigned = data['cagesAssigned']
@@ -1089,6 +1132,19 @@ def createNotificationAssignment(data):
             "nid":nid
         }
         notifications_db.insert_one(new_notification)
+        name = f"{data['firstName']} {data['lastName']}"
+        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],new_assigned, new_assigned_1)
+    else:
+        nid = str(uuid.uuid4().hex)
+        new_notification = {
+            "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
+            "new_assigned" : data['cagesAssigned'],
+            "uid":data['uid'],
+            "status":"Active",
+            "nid":nid
+        }
+        notifications_db.insert_one(new_notification)
+        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],None, "")
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
@@ -1380,6 +1436,29 @@ def upload_file_cage():
         print(str(e))
         return jsonify({'error': str(e),"success":False}), 500
     
+@app.route('/getUserLogs', methods=['GET'])
+def get_user_logs():
+    try:
+        logs_db = db["logs_db"]
+        uid = request.args.get("uid")
+        logs = list(logs_db.find({"uid": uid}, {"_id": 0}))
+
+        return jsonify({"logs": logs[::-1], "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+
+@app.route('/getCageLogs', methods=['GET'])
+def get_cage_logs():
+    try:
+        logs_db = db["logs_db"]
+        cid = request.args.get("cid")
+        logs = list(logs_db.find({"cid": cid}, {"_id": 0}))
+        
+        return jsonify({"logs": logs[::-1], "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
 
 
 if __name__ == '__main__':
