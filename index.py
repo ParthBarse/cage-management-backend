@@ -200,7 +200,7 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
     ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
     curr_date = ind_time
 
-    if len(cages) != 0 :
+    if len(cages) :
         assigned_cages = ""
         data = {
             "lType":"cageAssignedUser",
@@ -1144,7 +1144,7 @@ def createNotificationAssignment(data,nf=False):
             "nid":nid
         }
         notifications_db.insert_one(new_notification)
-        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],None, "")
+        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],[], "")
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
