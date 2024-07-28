@@ -1288,8 +1288,8 @@ def update_notification_status():
         nid = request.args.get('nid')
         notifications_db = db['notifications_db']
         users_db = db['users_db']
+        notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
         if status == "accept":
-            notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
             users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
             createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'])
