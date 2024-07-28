@@ -216,7 +216,7 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
             dt = {
                 "lType":"cageAssignment",
                 "lText": f"This Cage is Assigned to : {desgnation} {name}",
-                "range" : range,
+                "range" : range_name,
                 "date" : curr_date,
                 "uid":uid,
                 "cid":cage
