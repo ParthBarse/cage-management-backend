@@ -1128,23 +1128,28 @@ def createNotificationAssignment(data,nf=False):
         new_notification = {
             "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to Serial Number - {new_assigned_1}.",
             "new_assigned" : data['cagesAssigned'],
+            "designation":data["designation"],
+            "range": data["range"],
+            "name":name,
+            "cageText": new_assigned_1,
             "uid":data['uid'],
             "status":"Active",
             "nid":nid
         }
         notifications_db.insert_one(new_notification)
-        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],new_assigned, new_assigned_1)
     else:
         nid = str(uuid.uuid4().hex)
         new_notification = {
             "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
             "new_assigned" : data['cagesAssigned'],
+            "designation":data["designation"],
+            "name":name,
+            "range": data["range"],
             "uid":data['uid'],
             "status":"Active",
             "nid":nid
         }
         notifications_db.insert_one(new_notification)
-        createCageAssignmentLogs(data['uid'],name,data['designation'],data['range'],[], "")
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
@@ -1270,10 +1275,12 @@ def update_notification_status():
             notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
             users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'])
             return jsonify({"message": "Accepted", "success": True}), 200
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
             return jsonify({"message": "Reject", "success": False}), 200
 
     except Exception as e:
