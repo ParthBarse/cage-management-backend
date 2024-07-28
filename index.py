@@ -200,7 +200,7 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
     ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
     curr_date = ind_time
 
-    if cages :
+    if len(cages) != 0 :
         assigned_cages = ""
         data = {
             "lType":"cageAssignedUser",
