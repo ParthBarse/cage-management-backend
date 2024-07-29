@@ -124,10 +124,10 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
             "range": range_name,
             "uid":uid
         }
-        print("Log : ",data)
+        # print("Log : ",data)
         createLog(data)
         for cage in cages:
-            print("Updating Status : ",cage)
+            # print("Updating Status : ",cage)
             cages_db = db['cages_db']
             cages_db.update_one({'cid':cage}, {"$set": {"status":"active"}})
             dt = {
@@ -556,7 +556,13 @@ def edit_user():
                 updated_data[key] = value
 
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
-            createNotificationAssignment(data)
+            if len(data['cagesAssigned']) > len(existing_data['cagesAssigned']):
+                createNotificationAssignment(data)
+            else:
+                difference = list(set(existing_data['cagesAssigned']) - set(data['cagesAssigned']))
+                for dt in difference:
+                    cages_db = db['cages_db']
+                    cages_db.update_one({'cid':dt}, {"$set": {"status":"camp-cage"}})
         elif len(list(data['cagesAssigned'])) == 0:
             createNotificationAssignment(data)
 
