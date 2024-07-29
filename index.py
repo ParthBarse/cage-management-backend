@@ -555,6 +555,10 @@ def edit_user():
             if value != "" and key != "cagesAssigned" and key != "assignedBy" and key != 'uid' and key != "password":
                 updated_data[key] = value
 
+        if data["password"]:
+            if data["password"] != "":
+                updated_data["password"] = generate_password_hash(data["password"], method='pbkdf2:sha256')
+
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
             if len(data['cagesAssigned']) > len(existing_data['cagesAssigned']):
                 createNotificationAssignment(data)
