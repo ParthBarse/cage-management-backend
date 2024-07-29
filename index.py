@@ -661,20 +661,6 @@ def createNotificationAssignment(data):
                 "nid":nid
             }
             notifications_db.insert_one(new_notification)
-        else:
-            nid = str(uuid.uuid4().hex)
-            new_notification = {
-                "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
-                "new_assigned" : data['cagesAssigned'],
-                "designation":data["designation"],
-                "name":name,
-                "cageText":"",
-                "range": data["range"],
-                "uid":data['uid'],
-                "status":"Active",
-                "nid":nid
-            }
-            notifications_db.insert_one(new_notification)
     else:
             nid = str(uuid.uuid4().hex)
             new_notification = {
@@ -751,6 +737,16 @@ def get_all_cages():
     try:
         cages_db = db["cages_db"]
         cages = list(cages_db.find({}, {"_id": 0}))
+        return jsonify({"cages": cages, "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/getAllCampCages', methods=['GET'])
+def get_all_cages():
+    try:
+        cages_db = db["cages_db"]
+        cages = list(cages_db.find({"status":"camp-cage"}, {"_id": 0}))
         return jsonify({"cages": cages, "success": True}), 200
 
     except Exception as e:
