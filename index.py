@@ -556,9 +556,10 @@ def edit_user():
                 updated_data[key] = value
 
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
-            if len(data['cagesAssigned']) < len(existing_data['cagesAssigned']):
+            if len(data['cagesAssigned']) > len(existing_data['cagesAssigned']):
                 createNotificationAssignment(data)
             else:
+                createNotificationAssignment(data)
                 difference = list(set(existing_data['cagesAssigned']) - set(data['cagesAssigned']))
                 for dt in difference:
                     cages_db = db['cages_db']
