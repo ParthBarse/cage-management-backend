@@ -743,7 +743,7 @@ def get_all_cages():
         return jsonify({"error": str(e)}), 500  # Internal Server Error
     
 @app.route('/getAllCampCages', methods=['GET'])
-def get_all_cages():
+def get_all_camp_cages():
     try:
         cages_db = db["cages_db"]
         cages = list(cages_db.find({"status":"camp-cage"}, {"_id": 0}))
