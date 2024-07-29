@@ -954,7 +954,7 @@ def login_admin():
         user = users_db.find_one({"username": username}, {"_id": 0})
 
         if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO":
-            if not user or not (user.get("password", "") == password):
+            if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
             # Generate JWT token
@@ -1001,6 +1001,8 @@ def register_user():
         if user or user2:
             return jsonify({"message": "User already exist with same ID", "success": False}), 401
         
+        hashed_password = generate_password_hash(data["password"], method='pbkdf2:sha256')
+        data["password"] = hashed_password
         users_db.insert_one(data)
         return jsonify({"message": "User registered successfully", "uid": uid})
 
@@ -1339,6 +1341,8 @@ def register_user_bulk(data):
         user2 = users_db.find_one({"username":data['username']})
         if user or user2:
             return 1
+        hashed_password = generate_password_hash(data["password"], method='pbkdf2:sha256')
+        data["password"] = hashed_password
         users_db.insert_one(data)
         return 0
 
