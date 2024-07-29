@@ -1255,6 +1255,27 @@ def filter_cages():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/filterUsers', methods=['POST'])
+def filter_users():
+    try:
+        # Get filter parameters from request parameters
+        filter_params = request.json
+
+        # Build the filter query
+        filter_query = build_filter_query(filter_params)
+
+        # Find cages based on the filter query
+        users_db = db["users_db"]
+        users = users_db.find(filter_query, {"_id": 0})  # Exclude the _id field from the response
+
+        # Convert the cursor to a list of dictionaries for easier serialization
+        user_list = list(users)
+
+        return jsonify({"users": user_list})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
 
 def build_filter_query(params):
     filter_query = {}
