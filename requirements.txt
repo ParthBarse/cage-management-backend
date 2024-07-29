@@ -1,6 +1,13 @@
 Flask
-flask-bcrypt
-flask-login
-flask-cors
 pymongo
-PyJWT
+Flask-Login
+Flask-Bcrypt
+Flask-Cors
+python-dotenv
+pytz
+requests
+python-docx
+pandas
+Werkzeug
+jwt
+smtplib
