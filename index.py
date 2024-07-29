@@ -124,8 +124,12 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
             "range": range_name,
             "uid":uid
         }
+        print("Log : ",data)
         createLog(data)
         for cage in cages:
+            print("Updating Status : ",cage)
+            cages_db = db['cages_db']
+            cages_db.update_one({'cid':cage}, {"$set": {"status":"active"}})
             dt = {
                 "lType":"cageAssignment",
                 "lText": f"This Cage is Assigned to : {desgnation} {name}",
@@ -553,7 +557,7 @@ def edit_user():
 
         if list(data['cagesAssigned']) != list(existing_data['cagesAssigned']):
             createNotificationAssignment(data)
-        if len(list(data['cagesAssigned'])) == 0:
+        elif len(list(data['cagesAssigned'])) == 0:
             createNotificationAssignment(data)
 
         result = users_db.update_one({"uid": uid}, {"$set": updated_data})
