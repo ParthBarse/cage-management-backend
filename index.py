@@ -146,7 +146,7 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText,editB
     else:
         data = {
             "lType":"cageAssignedUser",
-            "lText": f"No Cages are now Assigned to {desgnation} {name}. Updated By {editBy} and {actionBy}.",
+            "lText": f"No Cages are now Assigned to {desgnation} {name}. Updated By {editBy} and Approved by {actionBy}.",
             "date":curr_date,
             "name" : name,
             "designation": desgnation,
