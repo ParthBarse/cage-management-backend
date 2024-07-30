@@ -1,0 +1,30 @@
+{
+    "lType":"cageAssignedRemoveUser",
+    "lText": f"The cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy} which was updated by {notification['editBy']}.",
+    "date":curr_date,
+    "range": notification["range"],
+    "uid":notification["uid"]
+}
+
+{
+    "lType":"cageAssignedUser",
+    "lText": f"No Cages are now Assigned to {desgnation} {name}. Updated By {editBy} and Approved by {actionBy}.",
+    "date":curr_date,
+    "name" : name,
+    "designation": desgnation,
+    "range": range_name,
+    "editBy":editBy,
+    "actionBy":actionBy,
+    "uid":uid
+}
+
+{
+    "lType":"cageAssignment",
+    "lText": f"This Cage is Assigned to : {desgnation} {name}",
+    "range" : range_name,
+    "date" : curr_date,
+    "uid":uid,
+    "editBy":editBy,
+    "actionBy":actionBy,
+    "cid":cage
+}
