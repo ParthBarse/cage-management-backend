@@ -109,7 +109,7 @@ def createLog(data):
     notification_db = db['logs_db']
     notification_db.insert_one(data)
 
-def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
+def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText,editBy, actionBy):
     ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
     curr_date = ind_time
 
@@ -117,11 +117,13 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
         assigned_cages = ""
         data = {
             "lType":"cageAssignedUser",
-            "lText": f"The updated cages Assigned to {desgnation} {name} are : {cageText}",
+            "lText": f"The updated cages Assigned to {desgnation} {name} are : {cageText}. Assigned By {editBy} and Approved By {actionBy}",
             "date":curr_date,
             "name" : name,
             "designation": desgnation,
             "range": range_name,
+            "editBy":editBy,
+            "actionBy":actionBy,
             "uid":uid
         }
         # print("Log : ",data)
@@ -136,17 +138,21 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText):
                 "range" : range_name,
                 "date" : curr_date,
                 "uid":uid,
+                "editBy":editBy,
+                "actionBy":actionBy,
                 "cid":cage
             }
             createLog(dt)
     else:
         data = {
             "lType":"cageAssignedUser",
-            "lText": f"No Cages are now Assigned to {desgnation} {name}",
+            "lText": f"No Cages are now Assigned to {desgnation} {name}. Updated By {editBy} and {actionBy}.",
             "date":curr_date,
             "name" : name,
             "designation": desgnation,
             "range": range_name,
+            "editBy":editBy,
+            "actionBy":actionBy,
             "uid":uid
         }
         createLog(data)
@@ -453,7 +459,7 @@ def login_admin():
             # Generate JWT token
             token = create_jwt_token(user['uid'])
 
-            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "token": token})
+            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "name":f"{user['firstName']} {user['lastName']}", "token": token})
         else:
             return jsonify({"message": "User not Allowed", "success": False})
 
@@ -654,6 +660,7 @@ def createNotificationAssignment(data):
     cages_db = db['cages_db']
     new_assigned = data['cagesAssigned']
     name = f"{data['firstName']} {data['lastName']}"
+    editBy = f"{data['editBy']}"
 
     if new_assigned :
         if len(new_assigned) != 0:
@@ -665,7 +672,7 @@ def createNotificationAssignment(data):
             new_assigned_1 = ", ".join(list(all_cage_srNo))
             nid = str(uuid.uuid4().hex)
             new_notification = {
-                "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated to Serial Number - {new_assigned_1}.",
+                "assignmentText": f"Confirm : Assigned Cages of {data['designation']} {data['firstName']} {data['lastName']} are updated by {editBy} to Serial Number - {new_assigned_1}.",
                 "new_assigned" : data['cagesAssigned'],
                 "designation":data["designation"],
                 "range": data["range"],
@@ -673,6 +680,7 @@ def createNotificationAssignment(data):
                 "cageText": new_assigned_1,
                 "uid":data['uid'],
                 "status":"Active",
+                "editBy":editBy,
                 "nid":nid
             }
             notifications_db.insert_one(new_notification)
@@ -687,6 +695,7 @@ def createNotificationAssignment(data):
                 "range": data["range"],
                 "uid":data['uid'],
                 "status":"Active",
+                "editBy":editBy,
                 "nid":nid
             }
             notifications_db.insert_one(new_notification)
@@ -834,23 +843,39 @@ def get_all_notifications():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
+
+def createCageAssignmentRejectLogs(notification,actionBy):
+    ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
+    curr_date = ind_time
+    data = {
+        "lType":"cageAssignedRemoveUser",
+        "lText": f"The cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy} which was updated by {notification['editBy']}.",
+        "date":curr_date,
+        "range": notification["range"],
+        "uid":notification["uid"]
+    }
+    print("Log : ",data)
+    createLog(data)
+    pass
     
 @app.route('/updateNotificationStatus', methods=['GET'])
 def update_notification_status():
     try:
         status = request.args.get('status')
         nid = request.args.get('nid')
+        actionBy = request.args.get('actionBy')
         notifications_db = db['notifications_db']
         users_db = db['users_db']
         notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
         if status == "accept":
             users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
-            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'])
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'],notification['editBy'],actionBy)
             return jsonify({"message": "Accepted", "success": True}), 200
         else:
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
+            createCageAssignmentRejectLogs(notification,actionBy)
             # createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
             return jsonify({"message": "Reject", "success": False}), 200
 
@@ -1024,6 +1049,18 @@ def get_user_logs():
         logs = list(logs_db.find({"uid": uid}, {"_id": 0}))
 
         return jsonify({"logs": logs[::-1], "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/getDashboardLogs', methods=['GET'])
+def get_dashboard_logs():
+    try:
+        logs_db = db["logs_db"]
+        uid = request.args.get("uid")
+        logs = list(logs_db.find({}, {"_id": 0}))
+
+        return jsonify({"logs": logs[::-1][0:10], "success": True}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
