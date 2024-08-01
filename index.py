@@ -483,7 +483,7 @@ def login_user():
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
 
-        if user['designation'] == "Forester" or user['designation'] == "Forest Guard":
+        if user['designation'] == "Forester" or user['designation'] == "Forest Gaurd":
             if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
@@ -762,6 +762,28 @@ def get_all_cages():
         cages_db = db["cages_db"]
         cages = list(cages_db.find({}, {"_id": 0}))
         return jsonify({"cages": cages, "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/getAllUserCages', methods=['GET'])
+def get_all_user_cages():
+    try:
+        uid = request.args.get("uid")
+        cages_db = db["cages_db"]
+        users_db = db["users_db"]
+        user = users_db.find_one({"uid":uid})
+
+        cages = []
+
+        if user:
+            cagesAssigned = user["cagesAssigned"]
+            if len(cagesAssigned) > 0:
+                for cid in cagesAssigned:
+                    cage = cages_db.find_one({"cid":cid}, {"_id": 0})
+                    cages.append(cage)
+
+        return jsonify({"cages": cages, "count":len(cagesAssigned), "uid":uid, "success": True}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
