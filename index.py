@@ -158,6 +158,27 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText,editB
         createLog(data)
 
 
+def createUserActivityLogs(name, loc_name, lat, lng, current_img, uid, cid, srNo):
+    ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
+    ind_time_only = datetime.now(timezone("Asia/Kolkata")).strftime('%H:%M:%S')
+    curr_date = ind_time
+    curr_time = ind_time_only
+
+    data = {
+        "lType":"userActivityLog",
+        "lText": f"The Cage {srNo} updated By {name} at {loc_name}",
+        "name":name,
+        "loc_name":loc_name,
+        "lat":lat,
+        "lng":lng,
+        "currentImg":current_img,
+        "srNo":srNo,
+        "uid":uid,
+        "cid":cid
+    }
+    createLog(data)
+
+
 #-----------------------------------------------------------------------------------------
 
 #---------------------- System Synchronization Module ------------------------------------
@@ -1123,6 +1144,7 @@ def create_new_activity():
         lng = data["lng"]
         loc_name = data['locName']
         current_img = data['currentImg']
+        name = data['name']
 
         # Find existing cage
         existing_cage = cages_db.find_one({"cid": cid})
@@ -1142,6 +1164,9 @@ def create_new_activity():
         }
 
         cages_db.update_one({"cid": cid}, {"$set": updated_cage})
+
+        createUserActivityLogs(name, loc_name, lat, lng, current_img, uid, cid, existing_cage['srNo'])
+
         return jsonify({"message": "Cage updated successfully", "success": True}), 200
 
     except Exception as e:

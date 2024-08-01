@@ -28,3 +28,16 @@
     "actionBy":actionBy,
     "cid":cage
 }
+
+{
+    "lType":"userActivityLog",
+    "lText": f"The Cage {srNo} updated By {name} at {loc_name}",
+    "name":name,
+    "loc_name":loc_name,
+    "lat":lat,
+    "lng":lng,
+    "currentImg":current_img,
+    "srNo":srNo,
+    "uid":uid,
+    "cid":cid
+}
