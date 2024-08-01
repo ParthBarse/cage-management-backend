@@ -166,7 +166,7 @@ def createUserActivityLogs(name, loc_name, lat, lng, current_img, uid, cid, srNo
 
     data = {
         "lType":"userActivityLog",
-        "lText": f"The Cage {srNo} updated By {name} at {loc_name} on date {ind_time} and time {ind_time_only}",
+        "lText": f"The Cage {srNo} updated By {name} at {loc_name}.",
         "name":name,
         "loc_name":loc_name,
         "lat":lat,
