@@ -1107,6 +1107,45 @@ def get_cage_logs():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+
+@app.route('/createNewActivity', methods=['POST'])
+def create_new_activity():
+    try:
+        data = request.get_json()
+        data = dict(data)
+        cages_db = db["cages_db"]
+
+        cid = data['cid']
+        uid = data['uid']
+
+        lat = data["lat"]
+        lng = data["lng"]
+        loc_name = data['locName']
+        current_img = data['currentImg']
+
+        # Find existing cage
+        existing_cage = cages_db.find_one({"cid": cid})
+        if not existing_cage:
+            return jsonify({"message": "Cage not found", "success": False}), 404  # Not Found
+
+        # Update only provided fields
+        # for key, value in data.items():
+        #     if value != "" or key != "cagesAssigned" or key != "assignedBy":
+        #         existing_cage[key] = value
+
+        updated_cage = {
+            "lat":lat,
+            "lng":lng,
+            "locName":loc_name,
+            "currentImg":current_img
+        }
+
+        cages_db.update_one({"cid": cid}, {"$set": updated_cage})
+        return jsonify({"message": "Cage updated successfully", "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
 
 
 if __name__ == '__main__':
