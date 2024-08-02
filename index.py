@@ -505,6 +505,7 @@ def login_user():
         # Find the admin based on username
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
+        print(user['designation'])
 
         if user['designation'] == "Forest Gaurd":
             if not user or not  check_password_hash(user.get("password", ""), password):
