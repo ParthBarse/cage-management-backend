@@ -189,10 +189,6 @@ file_directory = file_dir
 
 def save_file(file, uid):
     try:
-        print(file_directory)
-        print(files_url)
-        print(files_base_dir)
-        print(files_base_url)
         # Get the file extension from the original filename
         original_filename = file.filename
         _, file_extension = os.path.splitext(original_filename)
@@ -479,7 +475,7 @@ def login_admin():
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
 
-        if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO":
+        if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO" or user['designation'] == "Forester":
             if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
@@ -510,7 +506,7 @@ def login_user():
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
 
-        if user['designation'] == "Forester" or user['designation'] == "Forest Gaurd":
+        if user['designation'] == "Forest Gaurd":
             if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
