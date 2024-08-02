@@ -484,7 +484,7 @@ def login_admin():
 
             return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "name":f"{user['firstName']} {user['lastName']}", "token": token})
         else:
-            return jsonify({"message": "User not Allowed", "success": False})
+            return jsonify({"message": "User not Allowed", "success": False}), 401
 
     except Exception as e:
         return jsonify({"error": str(e), "success": False}), 500  # Internal Server Error
