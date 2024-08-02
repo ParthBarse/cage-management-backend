@@ -505,9 +505,9 @@ def login_user():
         # Find the admin based on username
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
-        print(user['designation'])
+        # print(user['designation'])
 
-        if user['designation'] == "Forest Gaurd":
+        if user['designation'] == "Forest Guard":
             if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
