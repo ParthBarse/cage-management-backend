@@ -482,7 +482,7 @@ def login_admin():
             # Generate JWT token
             token = create_jwt_token(user['uid'])
 
-            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "name":f"{user['firstName']} {user['lastName']}", "token": token})
+            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "name":f"{user['firstName']} {user['lastName']}", "token": token}),200
         else:
             return jsonify({"message": "User not Allowed", "success": False}), 401
 
