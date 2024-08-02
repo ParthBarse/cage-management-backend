@@ -38,6 +38,8 @@ import os
 
 #--------------------------------------------------------------------------------
 
+load_dotenv()
+
 file_dir = os.getenv("file_dir")
 files_url = os.getenv("files_url")
 files_base_dir = os.getenv("files_base_dir")
@@ -54,8 +56,6 @@ files_base_url = os.getenv("files_base_url")
 
 app = Flask(__name__)
 CORS(app)
-
-load_dotenv()
 
 mongodb_connection_string = os.getenv("MONGODB_CONNECTION_STRING")
 
