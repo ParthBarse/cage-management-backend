@@ -189,6 +189,10 @@ file_directory = file_dir
 
 def save_file(file, uid):
     try:
+        print(file_directory)
+        print(files_url)
+        print(files_base_dir)
+        print(files_base_url)
         # Get the file extension from the original filename
         original_filename = file.filename
         _, file_extension = os.path.splitext(original_filename)
