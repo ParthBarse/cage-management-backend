@@ -1119,6 +1119,18 @@ def get_user_logs():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
     
+def get_unique_count(logs):
+    seen_cids = set()
+    unique_logs = []
+
+    for log in logs:
+        cid = log.get('cid')
+        if cid and cid not in seen_cids:
+            seen_cids.add(cid)
+            unique_logs.append(log)
+
+    return len(unique_logs)
+    
 @app.route('/getDashboardLogs', methods=['GET'])
 def get_dashboard_logs():
     try:
@@ -1133,7 +1145,7 @@ def get_dashboard_logs():
         curr_date = ind_time
 
         activeCagesCount = len(list(cages_db.find({"status":"active"},{"_id":""})))
-        todaysActiveCages = len(set(list(logs_db.find({"lType":"userActivityLog", "date":curr_date}, {"_id": 0}))))
+        todaysActiveCages = get_unique_count(list(logs_db.find({"lType":"userActivityLog", "date":curr_date}, {"_id": 0})))
         campCagesCount = len(list(cages_db.find({"status":"camp-cage"},{"_id":""})))
         maintenanceCagesCount = len(list(cages_db.find({"status":"maintenance"},{"_id":""})))
         totalUsersCount = len(list(user_db.find({},{"_id":""})))
