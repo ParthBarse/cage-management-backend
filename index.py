@@ -997,12 +997,14 @@ def generate_id(range_name, username):
     return range_shortform + '-' + username
 
 def bulk_import_user_data(data):
-    for dt in data:
-        register_user_bulk(str(dt))
+    with app.app_context():
+        for dt in data:
+            register_user_bulk(str(dt))
 
 def bulk_import_cage_data(data):
-    for dt in data:
-        add_cages_bulk(str(dt))
+    with app.app_context():
+        for dt in data:
+            add_cages_bulk(str(dt))
 
 @app.route('/bulkUserImport', methods=['POST'])
 def upload_file_user():
