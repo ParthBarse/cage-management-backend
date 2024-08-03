@@ -1120,7 +1120,7 @@ def get_dashboard_logs():
     try:
         logs_db = db["logs_db"]
         uid = request.args.get("uid")
-        logs = list(logs_db.find({}, {"_id": 0}))
+        logs = list(logs_db.find({"lType":"userActivityLog"}, {"_id": 0}))
 
         cages_db = db['cages_db']
         user_db = db['users_db']
@@ -1132,6 +1132,27 @@ def get_dashboard_logs():
         totalCagesCount = len(list(cages_db.find({},{"_id":""})))
 
         return jsonify({"logs": logs[::-1][0:10], "countsValues":{"todaysCagesCount":"0","activeCagesCount":activeCagesCount, "campCagesCount":campCagesCount,"maintenanceCagesCount":maintenanceCagesCount, "totalUsersCount":totalUsersCount, "totalCagesCount":totalCagesCount}, "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/getAllUserActivityLogs', methods=['GET'])
+def get_all_user_activity_logs():
+    try:
+        logs_db = db["logs_db"]
+        uid = request.args.get("uid")
+        logs = list(logs_db.find({"lType":"userActivityLog"}, {"_id": 0}))
+
+        cages_db = db['cages_db']
+        user_db = db['users_db']
+
+        activeCagesCount = len(list(cages_db.find({"status":"active"},{"_id":""})))
+        campCagesCount = len(list(cages_db.find({"status":"camp-cage"},{"_id":""})))
+        maintenanceCagesCount = len(list(cages_db.find({"status":"maintenance"},{"_id":""})))
+        totalUsersCount = len(list(user_db.find({},{"_id":""})))
+        totalCagesCount = len(list(cages_db.find({},{"_id":""})))
+
+        return jsonify({"logs": logs[::-1], "countsValues":{"todaysCagesCount":"0","activeCagesCount":activeCagesCount, "campCagesCount":campCagesCount,"maintenanceCagesCount":maintenanceCagesCount, "totalUsersCount":totalUsersCount, "totalCagesCount":totalCagesCount}, "success": True}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
