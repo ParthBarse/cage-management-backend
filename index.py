@@ -1133,7 +1133,7 @@ def get_dashboard_logs():
         curr_date = ind_time
 
         activeCagesCount = len(list(cages_db.find({"status":"active"},{"_id":""})))
-        todaysActiveCages = len(set(list(logs_db.find({"lType":"userActivityLog", "date":ind_time}, {"_id": 0}))))
+        todaysActiveCages = len(set(list(logs_db.find({"lType":"userActivityLog", "date":curr_date}, {"_id": 0}))))
         campCagesCount = len(list(cages_db.find({"status":"camp-cage"},{"_id":""})))
         maintenanceCagesCount = len(list(cages_db.find({"status":"maintenance"},{"_id":""})))
         totalUsersCount = len(list(user_db.find({},{"_id":""})))
