@@ -999,12 +999,12 @@ def generate_id(range_name, username):
 def bulk_import_user_data(data):
     with app.app_context():
         for dt in data:
-            register_user_bulk(str(dt))
+            register_user_bulk(dt)
 
 def bulk_import_cage_data(data):
     with app.app_context():
         for dt in data:
-            add_cages_bulk(str(dt))
+            add_cages_bulk(dt)
 
 @app.route('/bulkUserImport', methods=['POST'])
 def upload_file_user():
@@ -1044,6 +1044,7 @@ def upload_file_user():
         user_data = df.to_dict(orient='records')
 
         if user_data:
+            print("Thread Starting...")
             thread = threading.Thread(target=bulk_import_user_data, args=(user_data,))
             thread.start()
             return jsonify({'message': 'File stored successfully.', 'file_url': file_path,"success":True}), 200
@@ -1076,6 +1077,13 @@ def upload_file_cage():
         file_path = save_file_2(uploaded_file, sid)
 
         df = pd.read_excel(file_path)
+
+        if 'lat' in df.columns:
+            df['lat'] = df['lat'].apply(lambda x: str(x) if not pd.isna(x) else x)
+
+        if 'lng' in df.columns:
+            df['lng'] = df['lng'].apply(lambda x: str(x) if not pd.isna(x) else x)
+    
         cage_data = df.to_dict(orient='records')
 
         if cage_data:
