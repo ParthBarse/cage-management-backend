@@ -1129,13 +1129,17 @@ def get_dashboard_logs():
         cages_db = db['cages_db']
         user_db = db['users_db']
 
+        ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
+        curr_date = ind_time
+
         activeCagesCount = len(list(cages_db.find({"status":"active"},{"_id":""})))
+        todaysActiveCages = len(set(list(logs_db.find({"lType":"userActivityLog", "date":ind_time}, {"_id": 0}))))
         campCagesCount = len(list(cages_db.find({"status":"camp-cage"},{"_id":""})))
         maintenanceCagesCount = len(list(cages_db.find({"status":"maintenance"},{"_id":""})))
         totalUsersCount = len(list(user_db.find({},{"_id":""})))
         totalCagesCount = len(list(cages_db.find({},{"_id":""})))
 
-        return jsonify({"logs": logs[::-1][0:10], "countsValues":{"todaysCagesCount":"0","activeCagesCount":activeCagesCount, "campCagesCount":campCagesCount,"maintenanceCagesCount":maintenanceCagesCount, "totalUsersCount":totalUsersCount, "totalCagesCount":totalCagesCount}, "success": True}), 200
+        return jsonify({"logs": logs[::-1][0:10], "countsValues":{"todaysCagesCount":todaysActiveCages,"activeCagesCount":activeCagesCount, "campCagesCount":campCagesCount,"maintenanceCagesCount":maintenanceCagesCount, "totalUsersCount":totalUsersCount, "totalCagesCount":totalCagesCount}, "success": True}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
