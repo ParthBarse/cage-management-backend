@@ -1143,9 +1143,10 @@ def get_dashboard_logs():
 @app.route('/getAllUserActivityLogs', methods=['GET'])
 def get_all_user_activity_logs():
     try:
+        date_selected = request.args.get("date_selected")
         logs_db = db["logs_db"]
         uid = request.args.get("uid")
-        logs = list(logs_db.find({"lType":"userActivityLog"}, {"_id": 0}))
+        logs = list(logs_db.find({"lType":"userActivityLog", "date":date_selected}, {"_id": 0}))
 
         cages_db = db['cages_db']
         user_db = db['users_db']
