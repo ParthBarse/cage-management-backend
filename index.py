@@ -931,6 +931,7 @@ def update_notification_status():
 
 def register_user_bulk(data):
     try:
+        print("Final Registration")
         data = dict(data)
         # Generate a unique ID for the student using UUID
         uid = str(uuid.uuid4().hex)
@@ -943,14 +944,18 @@ def register_user_bulk(data):
         user2 = users_db.find_one({"username":data['username']})
         if user or user2:
             return 1
-        hashed_password = generate_password_hash(data["password"], method='pbkdf2:sha256')
-        data["password"] = hashed_password
+        if data["password"]:
+            hashed_password = generate_password_hash(data["password"], method='pbkdf2:sha256')
+            data["password"] = hashed_password
+        else:
+            data["password"] = generate_password_hash(data['phone'], method='pbkdf2:sha256')
         users_db.insert_one(data)
         return 0
 
     except ValueError as ve:
         return 1
     except Exception as e:
+        print(str(e))
         return 1
     
 def add_cages_bulk(data):
@@ -997,6 +1002,7 @@ def generate_id(range_name, username):
     return range_shortform + '-' + username
 
 def bulk_import_user_data(data):
+    print("Importing...")
     with app.app_context():
         for dt in data:
             register_user_bulk(dt)
