@@ -114,10 +114,9 @@ def createCageAssignmentLogs(uid,name,desgnation,range_name,cages,cageText,editB
     curr_date = ind_time
 
     if len(cages) != 0:
-        assigned_cages = ""
         data = {
             "lType":"cageAssignedUser",
-            "lText": f"The updated cages Assigned to {desgnation} {name} are : {cageText}. Assigned By {editBy} and Approved By {actionBy}",
+            "lText": f"The Cages Assigned to {desgnation} {name} are : {cageText}. Assigned By {editBy} and Approved By {actionBy}",
             "date":curr_date,
             "name" : name,
             "designation": desgnation,
@@ -598,8 +597,8 @@ def edit_user():
                 for dt in difference:
                     cages_db = db['cages_db']
                     cages_db.update_one({'cid':dt}, {"$set": {"status":"camp-cage"}})
-        elif len(list(data['cagesAssigned'])) == 0:
-            createNotificationAssignment(data)
+        # elif len(list(data['cagesAssigned'])) == 0:
+        #     createNotificationAssignment(data)
 
         result = users_db.update_one({"uid": uid}, {"$set": updated_data})
 
@@ -895,7 +894,7 @@ def createCageAssignmentRejectLogs(notification,actionBy):
     curr_date = ind_time
     data = {
         "lType":"cageAssignedRemoveUser",
-        "lText": f"The cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy} which was updated by {notification['editBy']}.",
+        "lText": f"The Cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy} which was updated by {notification['editBy']}.",
         "date":curr_date,
         "range": notification["range"],
         "uid":notification["uid"]
