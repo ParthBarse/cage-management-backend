@@ -897,6 +897,8 @@ def createCageAssignmentRejectLogs(notification,actionBy):
         "lText": f"The Cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy} which was updated by {notification['editBy']}.",
         "date":curr_date,
         "range": notification["range"],
+        "editBy":notification['editBy'],
+        "actionBy":actionBy,
         "uid":notification["uid"]
     }
     print("Log : ",data)
