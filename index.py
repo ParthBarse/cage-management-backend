@@ -945,10 +945,10 @@ def register_user_bulk(data):
         if user or user2:
             return 1
         if data["password"]:
-            hashed_password = generate_password_hash(data["password"], method='pbkdf2:sha256')
+            hashed_password = generate_password_hash(str(data["password"]), method='pbkdf2:sha256')
             data["password"] = hashed_password
         else:
-            data["password"] = generate_password_hash(data['phone'], method='pbkdf2:sha256')
+            data["password"] = generate_password_hash(str(data['phone']), method='pbkdf2:sha256')
         users_db.insert_one(data)
         return 0
 
