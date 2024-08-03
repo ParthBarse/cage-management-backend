@@ -1158,7 +1158,7 @@ def get_all_user_activity_logs():
         return jsonify({"error": str(e)}), 500  # Internal Server Error
     
 @app.route('/getAllActionsLogs', methods=['GET'])
-def get_all_user_activity_logs():
+def get_all_actions_logs():
     try:
         logs_db = db["logs_db"]
         uid = request.args.get("uid")
