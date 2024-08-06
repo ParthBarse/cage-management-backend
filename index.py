@@ -475,7 +475,7 @@ def login_admin():
         users_db = db["users_db"]
         user = users_db.find_one({"username": username}, {"_id": 0})
 
-        if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO" or user['designation'] == "Forester":
+        if user['designation'] == "DyCF" or user['designation'] == "ACF" or user['designation'] == "RFO" or user['designation'] == "Forester" or user['designation'] == "system":
             if not user or not  check_password_hash(user.get("password", ""), password):
                 return jsonify({"error": "Invalid username or password.", "success": False}), 401  # Unauthorized
 
