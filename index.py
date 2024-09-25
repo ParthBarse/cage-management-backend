@@ -773,7 +773,7 @@ def createNotificationRequestCage(data):
             req_cages_srno = ", ".join(list(all_cage_srNo))
             nid = str(uuid.uuid4().hex)
             new_notification = {
-                "assignmentText": f"{data['userData']['designation']} {data['userData']['firstName']} {data['userData']['lastName']} from Range {range} Requested for Cages no. {req_cages_srno}. Do you want to assign it to them ?",
+                "reqText": f"{data['userData']['designation']} {data['userData']['firstName']} {data['userData']['lastName']} from Range {range} Requested for Cages no. {req_cages_srno}. Do you want to assign it to them ?",
                 # "new_assigned" : data['cagesAssigned'],
                 "designation":data['userData']["designation"],
                 "range": range,
