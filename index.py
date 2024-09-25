@@ -616,7 +616,7 @@ def edit_user():
     
 
 
-@app.route('/requestCages', methods=['PUT'])
+@app.route('/requestCages', methods=['POST'])
 def req_cages_by_user():
     try:
         data = request.get_json()
@@ -1037,7 +1037,8 @@ def update_notification_req_status():
         users_db = db['users_db']
         notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
         if status == "accept":
-            userCages = list(notification['userData']['cagesAssigned']) + list(notification['reqCages']) 
+            existing_data = users_db.find_one({'uid':notification['uid']},{'_id':0})
+            userCages = list(existing_data['cagesAssigned']) + list(notification['reqCages']) 
             users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":userCages}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
             createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['reqCages'], notification['cageText'],notification['name'],actionBy)
