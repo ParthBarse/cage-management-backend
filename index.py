@@ -615,6 +615,36 @@ def edit_user():
         return jsonify({"error": str(e)}), 500  # Internal Server Error
     
 
+
+@app.route('/requestCages', methods=['PUT'])
+def req_cages_by_user():
+    try:
+        data = request.get_json()
+        if not data.get('uid'):
+            return jsonify({"message": "UID is required", "success": False}), 400
+        
+        users_db = db["users_db"]
+        uid = data['uid']
+        existing_data = users_db.find_one({'uid':uid},{'_id':0})
+        reqCages = data['reqCages']
+
+        reqData = {
+            "userData":existing_data,
+            "reqCages":reqCages
+        }
+
+        createNotificationRequestCage(reqData)
+
+        return jsonify({"message": "User updated successfully", "success": True})
+
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400  # Bad Request
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+   
+   
+
 @app.route('/getUser', methods=['GET'])
 def get_user():
     try:
@@ -723,6 +753,53 @@ def createNotificationAssignment(data):
                 "nid":nid
             }
             notifications_db.insert_one(new_notification)
+
+
+def createNotificationRequestCage(data):
+    notifications_db = db['notifications_db']
+    cages_db = db['cages_db']
+
+    name = f"{data['userData']['firstName']} {data['userData']['lastName']}"
+    range = data['userData']['range']
+    reqCages = list(data['reqCages'])
+
+    if reqCages :
+        if len(reqCages) != 0:
+            all_cage_srNo = []
+            for dt in reqCages:
+                cg = cages_db.find_one({"cid":dt},{"_id":0})
+                srNo = cg['srNo']
+                all_cage_srNo.append(srNo)
+            req_cages_srno = ", ".join(list(all_cage_srNo))
+            nid = str(uuid.uuid4().hex)
+            new_notification = {
+                "reqText": f"{data['userData']['designation']} {data['userData']['firstName']} {data['userData']['lastName']} from Range {range} Requested for Cages no. {req_cages_srno}. Do you want to assign it to them ?",
+                # "new_assigned" : data['cagesAssigned'],
+                "designation":data['userData']["designation"],
+                "range": range,
+                "name":name,
+                "cageText": req_cages_srno,
+                'reqCages':reqCages,
+                "uid":data['userData']['uid'],
+                "status":"Active",
+                "nid":nid
+            }
+            notifications_db.insert_one(new_notification)
+    # else:
+    #         nid = str(uuid.uuid4().hex)
+    #         new_notification = {
+    #             "assignmentText": f"Confirm : No Cages Assigned to {data['designation']} {data['firstName']} {data['lastName']}.",
+    #             "new_assigned" : data['cagesAssigned'],
+    #             "designation":data["designation"],
+    #             "name":name,
+    #             "cageText":"",
+    #             "range": data["range"],
+    #             "uid":data['uid'],
+    #             "status":"Active",
+    #             # "editBy":editBy,
+    #             "nid":nid
+    #         }
+    #         notifications_db.insert_one(new_notification)
 
 @app.route('/updateCage', methods=['PUT'])
 def update_cage():
@@ -907,6 +984,24 @@ def createCageAssignmentRejectLogs(notification,actionBy):
     print("Log : ",data)
     createLog(data)
     pass
+
+def createCageAssignmentReqRejectLogs(notification,actionBy):
+    ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
+    curr_date = ind_time
+    data = {
+        "lType":"cageAssignedRemoveUser",
+        "lText": f"The Cages Not Assigned to {notification['name']}. Assignment Rejected by {actionBy}.",
+        "date":curr_date,
+        "name":notification['name'],
+        "cageText":"-",
+        "range": notification["range"],
+        "editBy":notification['name'],
+        "actionBy":actionBy,
+        "uid":notification["uid"]
+    }
+    print("Log : ",data)
+    createLog(data)
+    pass
     
 @app.route('/updateNotificationStatus', methods=['GET'])
 def update_notification_status():
@@ -926,6 +1021,31 @@ def update_notification_status():
             # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
             createCageAssignmentRejectLogs(notification,actionBy)
+            # createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
+            return jsonify({"message": "Reject", "success": False}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+    
+@app.route('/updateNotificationReqStatus', methods=['GET'])
+def update_notification_req_status():
+    try:
+        status = request.args.get('status')
+        nid = request.args.get('nid')
+        actionBy = request.args.get('actionBy')
+        notifications_db = db['notifications_db']
+        users_db = db['users_db']
+        notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
+        if status == "accept":
+            userCages = list(notification['userData']['cagesAssigned']) + list(notification['reqCages']) 
+            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":userCages}})
+            notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
+            createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['reqCages'], notification['cageText'],notification['name'],actionBy)
+            return jsonify({"message": "Accepted", "success": True}), 200
+        else:
+            # notification = list(notifications_db.find_one({'nid':nid}, {"_id": 0}))
+            notifications_db.update_one({'nid':nid}, {"$set": {"status":"reject"}})
+            createCageAssignmentReqRejectLogs(notification,actionBy)
             # createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],[], "")
             return jsonify({"message": "Reject", "success": False}), 200
 
