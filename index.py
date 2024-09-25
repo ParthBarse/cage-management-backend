@@ -482,7 +482,7 @@ def login_admin():
             # Generate JWT token
             token = create_jwt_token(user['uid'])
 
-            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], "name":f"{user['firstName']} {user['lastName']}", "token": token}),200
+            return jsonify({"message": "Login successful.", "success": True, "uid": user['uid'], "designation":user['designation'], 'range':user['range'],"name":f"{user['firstName']} {user['lastName']}", "token": token}),200
         else:
             return jsonify({"message": "User not Allowed", "success": False}), 401
 
@@ -773,7 +773,7 @@ def createNotificationRequestCage(data):
             req_cages_srno = ", ".join(list(all_cage_srNo))
             nid = str(uuid.uuid4().hex)
             new_notification = {
-                "reqText": f"{data['userData']['designation']} {data['userData']['firstName']} {data['userData']['lastName']} from Range {range} Requested for Cages no. {req_cages_srno}. Do you want to assign it to them ?",
+                "assignmentText": f"{data['userData']['designation']} {data['userData']['firstName']} {data['userData']['lastName']} from Range {range} Requested for Cages no. {req_cages_srno}. Do you want to assign it to them ?",
                 # "new_assigned" : data['cagesAssigned'],
                 "designation":data['userData']["designation"],
                 "range": range,
