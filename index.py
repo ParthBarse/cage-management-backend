@@ -967,6 +967,19 @@ def get_all_notifications():
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Internal Server Error
 
+
+@app.route('/getRangeNotifications', methods=['GET'])
+def get_range_notifications():
+    try:
+        range = request.args.get('range')
+        notifications_db = db['notifications_db']
+        notifications = list(notifications_db.find({'status':'Active','range':range}, {"_id": 0}))
+        return jsonify({"notifications": notifications, "success": True}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500  # Internal Server Error
+
+
 def createCageAssignmentRejectLogs(notification,actionBy):
     ind_time = datetime.now(timezone("Asia/Kolkata")).strftime('%Y-%m-%d')
     curr_date = ind_time
