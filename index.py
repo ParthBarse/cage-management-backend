@@ -1024,9 +1024,18 @@ def update_notification_status():
         actionBy = request.args.get('actionBy')
         notifications_db = db['notifications_db']
         users_db = db['users_db']
+        cages_db = db["cages_db"]
         notification = notifications_db.find_one({'nid':nid}, {"_id": 0})
         if status == "accept":
-            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":notification['new_assigned']}})
+            n_arr = []
+            usr_dt = users_db.find_one({'uid':notification['uid']}, {"_id": 0})
+            user_cgs = list(usr_dt['cagesAssigned'])
+            if len(list(notification['new_assigned'])) > 0:
+                for n in list(notification['new_assigned']):
+                    cg = cages_db.find_one({"cid":n})
+                    if cg['status'] == "camp-cage" or (n in user_cgs):
+                        n_arr.append(n)
+            users_db.update_one({'uid':notification['uid']}, {"$set": {"cagesAssigned":n_arr}})
             notifications_db.update_one({'nid':nid}, {"$set": {"status":"accepted"}})
             createCageAssignmentLogs(notification['uid'],notification['name'],notification['designation'],notification['range'],notification['new_assigned'], notification['cageText'],notification['editBy'],actionBy)
             return jsonify({"message": "Accepted", "success": True}), 200
