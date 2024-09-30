@@ -1063,8 +1063,8 @@ def update_notification_req_status():
             n_arr = []
             usr_dt = users_db.find_one({'uid':notification['uid']}, {"_id": 0})
             user_cgs = list(usr_dt['cagesAssigned'])
-            if len(list(notification['new_assigned'])) > 0:
-                for n in list(notification['new_assigned']):
+            if len(list(notification['reqCages'])) > 0:
+                for n in list(notification['reqCages']):
                     cg = cages_db.find_one({"cid":n})
                     if cg['status'] == "camp-cage" or (n in user_cgs):
                         n_arr.append(n)
